@@ -176,6 +176,9 @@ if __name__ == '__main__':
         if args[1] == '-h':
             habrSD.help()
         else :
-            habrSD.main("https://habr.com/ru/users/" + args[1] + "/posts/")
+            try :
+                habrSD.main("https://habr.com/ru/users/" + args[1] + "/posts/")
+            except :
+                print("[error]: Ошибка получения данных от :", args[1])
 
 # python3-lxml
