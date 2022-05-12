@@ -32,7 +32,7 @@ pip3 install -r requirements.txt
 
 Если все было сделано успешно, то Вы увидите примерно следующее:
 ```bash
-./src/main.py jessy_james
+./src/main.py -u jessy_james
 [info]: Скачивается: C/C++ из Python (ctypes) на Android
 [info]: Директория: 16 C C++ из Python (ctypes) на Android создана
 [info]: Директория: picture создана
