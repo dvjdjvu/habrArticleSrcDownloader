@@ -47,25 +47,20 @@ class habrArticleSrcDownloader():
             except OSError as e:
                 print("[error]: Ошибка создания директории: ", dir)
 
-    def save_md(self, name, str):
-        fd = open(name + ".md", "w")
-        fd.write(str)
-        fd.close()
-        
-    def save_html(self, name, str):
-        fd = open(name + ".html", "w")
-        fd.write(str)
-        fd.close()
-        
-    def save_comments(self, name, str):
-        str = str.split('\n')
-        str.reverse()
+    def save_md(self, name: str, text: str):
+        with open(name + ".md", "w") as fd:
+            fd.write(text)
 
-        fd = open(name + "_comments.md", "w")
-        for s in str:
-            fd.write("%s\n" % s)
-            
-        fd.close()
+    def save_html(self, name: str, text: str):
+        with open(name + ".html", "w") as fd:
+            fd.write(text)
+
+    def save_comments(self, name: str, text: str):
+        lst = text.split('\n')
+        lst.reverse()
+
+        with open(name + "_comments.md", "w") as fd:
+            fd.write("\n".join(lst))
     
     def get_comments(self, url_soup):        
         comments = url_soup.findAll('link', {'type': 'application/rss+xml'})
