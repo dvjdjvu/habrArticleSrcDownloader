@@ -29,7 +29,7 @@ class habrArticleSrcDownloader():
 
     def __init__(self):
         self.dir_author = ''
-        self.posts = None
+        self.posts = []
         self.comments = None
 
     def callback(self, el):
@@ -138,11 +138,7 @@ class habrArticleSrcDownloader():
             if (len(posts) == 0) :
                 break
 
-            if (self.posts != None) :
-                self.posts = self.posts + posts
-            else:
-                self.posts = posts
-                
+            self.posts += posts
             page_number = page_number + 1
     
     def parse_articles(self):
