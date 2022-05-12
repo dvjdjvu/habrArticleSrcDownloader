@@ -10,10 +10,19 @@ pip3 install -r requirements.txt
 ./src/main.py "user_name"
 ```
 
+Скачиваем статьи пользователя:
+```bash
+./src/main.py -u "user_name"
+```
+Скачиваем закладки пользователя:
+```bash
+./src/main.py -f "user_name"
+```
+
 Например:
 
 ```bash
-./src/main.py jessy_james
+./src/main.py -u jessy_james
 ```
 
 Взять имя пользователя можно из ссылки профиля

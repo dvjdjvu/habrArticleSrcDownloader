@@ -111,10 +111,10 @@ class habrArticleSrcDownloader():
             url_soup = BeautifulSoup(r.text, 'lxml')
         
             posts = url_soup.findAll('a', {'class': 'tm-article-snippet__title-link'})
-            
+
             if (len(posts) == 0) :
                 break
-            
+
             if (self.posts != None) :
                 self.posts = self.posts + posts
             else:
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                 print(ex)
         elif args[1] == '-f' :
             try :
-                habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/", DIR_FAVORITES)
+                habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
             except Exception as ex:
                 print("[error]: Ошибка получения данных от :", args[2])
                 print(ex)
