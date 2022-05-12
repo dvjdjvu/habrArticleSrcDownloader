@@ -3,15 +3,18 @@
 
 import os
 import sys
+import pymp
 import errno
 import getopt
 import requests
 import markdownify
+import multiprocessing
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 DIR_ARCTICLE = 'article'
+DIR_FAVORITES = 'favorites'
 DIR_PICTURE = 'picture'
 HABR_TITLE = "https://habr.com"
 
@@ -120,32 +123,34 @@ class habrArticleSrcDownloader():
             page_number = page_number + 1
     
     def parse_articles(self):
-        post_number = len(self.posts)
-
-        for p in self.posts :
-            print("[info]: Скачивается:", p.text)
-            name = p.text.replace("/", " ")
-            dir_path = str(post_number) + " " + name
+        print("[info]: Будет загружено:", len(self.posts), "статей.")
+        
+        with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
+            #for p in self.posts :
+            for i in pmp.range(0, len(self.posts)):
+                p = self.posts[i]
+                print("[info]: Скачивается:", p.text)
+                
+                name = p.text.replace("/", " ")
+                dir_path = str(len(self.posts) - i) + " " + name
             
-            # создаем директории с названиями статей
-            self.create_dir(dir_path)
-            # заходим в директорию статьи
-            os.chdir(dir_path)
+                # создаем директории с названиями статей
+                self.create_dir(dir_path)
+                # заходим в директорию статьи
+                os.chdir(dir_path)
             
-            # создаем дирректорию под картинки
-            self.create_dir(DIR_PICTURE)
+                # создаем дирректорию под картинки
+                self.create_dir(DIR_PICTURE)
             
-            self.get_article(name, HABR_TITLE + p.get('href'))
+                self.get_article(name, HABR_TITLE + p.get('href'))
             
-            # выходим из директории статьи
-            os.chdir('../')
+                # выходим из директории статьи
+                os.chdir('../')
             
-            post_number = post_number - 1
-            
-    def main(self, url):
+    def main(self, url, dir):
         # создаем папку для статей
-        self.create_dir(DIR_ARCTICLE)
-        os.chdir(DIR_ARCTICLE)
+        self.create_dir(dir)
+        os.chdir(dir)
         
         # создаем папку с именем автора
         self.dir_author = url.split('/')[5]
@@ -175,10 +180,17 @@ if __name__ == '__main__':
     else :
         if args[1] == '-h':
             habrSD.help()
-        else :
+        elif args[1] == '-u' :
             try :
-                habrSD.main("https://habr.com/ru/users/" + args[1] + "/posts/")
-            except :
-                print("[error]: Ошибка получения данных от :", args[1])
+                habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
+            except Exception as ex:
+                print("[error]: Ошибка получения данных от :", args[2])
+                print(ex)
+        elif args[1] == '-f' :
+            try :
+                habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/", DIR_FAVORITES)
+            except Exception as ex:
+                print("[error]: Ошибка получения данных от :", args[2])
+                print(ex)
 
-# python3-lxml
+# apt install libomp-dev
