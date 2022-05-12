@@ -58,8 +58,13 @@ class habrArticleSrcDownloader():
         fd.close()
         
     def save_comments(self, name, str):
+        str = str.split('\n')
+        str.reverse()
+
         fd = open(name + "_comments.md", "w")
-        fd.write(str)
+        for s in str:
+            fd.write("%s\n" % s)
+            
         fd.close()
     
     def get_comments(self, url_soup):        
