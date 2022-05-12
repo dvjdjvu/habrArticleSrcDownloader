@@ -198,22 +198,19 @@ if __name__ == '__main__':
     except getopt.GetoptError:
         habrSD.help()
     
-    if len(args) == 1 :
+    if len(args) == 1 or args[1] == '-h' :
         habrSD.help()
-    else :
-        if args[1] == '-h':
-            habrSD.help()
-        elif args[1] == '-u' :
-            try :
-                habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
-            except Exception as ex:
-                print("[error]: Ошибка получения данных от :", args[2])
-                print(ex)
-        elif args[1] == '-f' :
-            try :
-                habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
-            except Exception as ex:
-                print("[error]: Ошибка получения данных от :", args[2])
-                print(ex)
+    elif args[1] == '-u' :
+        try :
+            habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
+        except Exception as ex:
+            print("[error]: Ошибка получения данных от :", args[2])
+            print(ex)
+    elif args[1] == '-f' :
+        try :
+            habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
+        except Exception as ex:
+            print("[error]: Ошибка получения данных от :", args[2])
+            print(ex)
 
 # apt install libomp-dev
