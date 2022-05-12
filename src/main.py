@@ -30,6 +30,7 @@ class habrArticleSrcDownloader():
     def __init__(self):
         self.dir_author = ''
         self.posts = None
+        self.comments = None
 
     def callback(self, el):
         if (el.has_attr('class')) :
@@ -55,7 +56,26 @@ class habrArticleSrcDownloader():
         fd = open(name + ".html", "w")
         fd.write(str)
         fd.close()
-
+        
+    def save_comments(self, name, str):
+        fd = open(name + "_comments.md", "w")
+        fd.write(str)
+        fd.close()
+    
+    def get_comments(self, url_soup):        
+        comments = url_soup.findAll('link', {'type': 'application/rss+xml'})
+        
+        for c in comments :
+            try:
+                r = requests.get(c.get('href'))
+            except requests.exceptions.RequestException as e:
+                print("[error]: Ошибка получения статьи: ", c.get('href'))
+                return
+            
+            url_soup = BeautifulSoup(r.text, 'lxml')
+            
+            return markdownify.markdownify(str(url_soup), heading_style="ATX", code_language_callback=callback)
+    
     def get_article(self, name, url):
         try:
             r = requests.get(url)
@@ -64,6 +84,8 @@ class habrArticleSrcDownloader():
             return
         
         url_soup = BeautifulSoup(r.text, 'lxml')
+        
+        comment = self.get_comments(url_soup)
         
         posts = url_soup.findAll('div', {'class': 'tm-article-body'})
         pictures = url_soup.findAll('img')
@@ -93,6 +115,7 @@ class habrArticleSrcDownloader():
             
             self.save_html(name, _p)
             self.save_md(name, h)
+            self.save_comments(name, str(comment))
             
             print("[info]: Статья: " + name + " сохранена")
 
@@ -164,7 +187,7 @@ class habrArticleSrcDownloader():
         os.chdir('../')
 
     def help(self):
-        print('./main.py [-h] [url]')
+        print('./main.py [-h] [-uf] user_name')
         sys.exit()
 
 if __name__ == '__main__':
