@@ -5,7 +5,7 @@
 ### Как использовать:
 
 ```bash
-apt-get install python3-lxml
+apt-get install python3-lxml libomp-dev
 pip3 install -r requirements.txt
 ./src/main.py "user_name"
 ```
