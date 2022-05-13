@@ -33,7 +33,7 @@ class habrArticleSrcDownloader():
         self.comments = None
 
     def dir_cor_name(self, _str):
-        for ch in ['#', '%', '&', '{', '}', '\\', '<', '>', '*', '/', '$', '‘', '“', ':', '@', '`', '|']:
+        for ch in ['#', '%', '&', '{', '}', '\\', '?', '<', '>', '*', '/', '$', '‘', '“', ':', '@', '`', '|']:
             _str = _str.replace(ch, ' ')
             
         return _str
@@ -161,7 +161,8 @@ class habrArticleSrcDownloader():
                 
                 #name = p.text.replace("/", " ")
                 name = self.dir_cor_name(p.text)
-                dir_path = str(len(self.posts) - i) + " " + name
+
+                dir_path = '{:03}'.format(len(self.posts) - i) + " " + name
             
                 # создаем директории с названиями статей
                 self.create_dir(dir_path)
