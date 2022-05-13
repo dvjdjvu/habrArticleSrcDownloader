@@ -18,11 +18,21 @@ pip3 install -r requirements.txt
 ```bash
 ./src/main.py -f "user_name"
 ```
+Скачиваем одиночную статью:
+```bash
+./src/main.py -s "article_id"
+```
 
 Например:
 
 ```bash
 ./src/main.py -u jessy_james
+```
+```bash
+./src/main.py -f jessy_james
+```
+```bash
+./src/main.py -s 665634
 ```
 
 Взять имя пользователя можно из ссылки профиля

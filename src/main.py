@@ -77,7 +77,7 @@ class habrArticleSrcDownloader():
             
             return markdownify.markdownify(str(url_soup), heading_style="ATX", code_language_callback=callback)
     
-    def get_article(self, name, url):
+    def get_article(self, url, name = None):
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException as e:
@@ -85,11 +85,21 @@ class habrArticleSrcDownloader():
             return
         
         url_soup = BeautifulSoup(r.text, 'lxml')
-        
         comment = self.get_comments(url_soup)
         
         posts = url_soup.findAll('div', {'class': 'tm-article-body'})
         pictures = url_soup.findAll('img')
+        
+        # одиночное скачивание статьи
+        if name == None :
+            
+            habrSD.create_dir(DIR_SINGLES)
+            os.chdir(DIR_SINGLES)
+            
+            name = self.dir_cor_name(url_soup.find('title').string)
+            
+            self.create_dir(name)
+            os.chdir(name)
         
         for p in posts :
             
@@ -97,7 +107,10 @@ class habrArticleSrcDownloader():
             
             _p = str(p).replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
             
+            # создаем дирректорию под картинки
+            self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
+            
             for link in pictures:
 
                 if (link.get('data-src')) :
@@ -160,10 +173,7 @@ class habrArticleSrcDownloader():
                 # заходим в директорию статьи
                 os.chdir(dir_path)
             
-                # создаем дирректорию под картинки
-                self.create_dir(DIR_PICTURE)
-            
-                self.get_article(name, HABR_TITLE + p.get('href'))
+                self.get_article(HABR_TITLE + p.get('href'), name)
             
                 # выходим из директории статьи
                 os.chdir('../')
@@ -207,6 +217,12 @@ if __name__ == '__main__':
     elif args[1] == '-f' :
         try :
             habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
+        except Exception as ex:
+            print("[error]: Ошибка получения данных от :", args[2])
+            print(ex)
+    elif args[1] == '-s' :
+        try :            
+            habrSD.get_article("https://habr.com/ru/post/" + args[2])
         except Exception as ex:
             print("[error]: Ошибка получения данных от :", args[2])
             print(ex)
