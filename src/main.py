@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 DIR_ARCTICLE = 'article'
 DIR_FAVORITES = 'favorites'
 DIR_PICTURE = 'picture'
+DIR_SINGLES = 'singles'
 HABR_TITLE = "https://habr.com"
 
 def callback(el):
@@ -159,7 +160,6 @@ class habrArticleSrcDownloader():
                 p = self.posts[i]
                 print("[info]: Скачивается:", p.text)
                 
-                #name = p.text.replace("/", " ")
                 name = self.dir_cor_name(p.text)
 
                 dir_path = '{:03}'.format(len(self.posts) - i) + " " + name
@@ -186,11 +186,11 @@ class habrArticleSrcDownloader():
         self.dir_author = url.split('/')[5]
         self.create_dir(self.dir_author)
         os.chdir(self.dir_author)
-        
+
         self.get_articles(url)
-        
+
         self.parse_articles()
-        
+
         os.chdir('../')
 
     def help(self):
