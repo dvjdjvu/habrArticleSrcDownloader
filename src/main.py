@@ -30,7 +30,7 @@ class habrArticleSrcDownloader():
 
     def __init__(self):
         self.dir_author = ''
-        self.posts = None
+        self.posts = []
         self.comments = None
 
     def dir_cor_name(self, _str):
@@ -48,25 +48,20 @@ class habrArticleSrcDownloader():
             except OSError as e:
                 print("[error]: Ошибка создания директории: ", dir)
 
-    def save_md(self, name, str):
-        fd = open(name + ".md", "w")
-        fd.write(str)
-        fd.close()
-        
-    def save_html(self, name, str):
-        fd = open(name + ".html", "w")
-        fd.write(str)
-        fd.close()
-        
-    def save_comments(self, name, str):
-        str = str.split('\n')
-        str.reverse()
+    def save_md(self, name: str, text: str):
+        with open(name + ".md", "w") as fd:
+            fd.write(text)
 
-        fd = open(name + "_comments.md", "w")
-        for s in str:
-            fd.write("%s\n" % s)
-            
-        fd.close()
+    def save_html(self, name: str, text: str):
+        with open(name + ".html", "w") as fd:
+            fd.write(text)
+
+    def save_comments(self, name: str, text: str):
+        lst = text.split('\n')
+        lst.reverse()
+
+        with open(name + "_comments.md", "w") as fd:
+            fd.write("\n".join(lst))
     
     def get_comments(self, url_soup):        
         comments = url_soup.findAll('link', {'type': 'application/rss+xml'})
@@ -144,11 +139,7 @@ class habrArticleSrcDownloader():
             if (len(posts) == 0) :
                 break
 
-            if (self.posts != None) :
-                self.posts = self.posts + posts
-            else:
-                self.posts = posts
-                
+            self.posts += posts
             page_number = page_number + 1
     
     def parse_articles(self):
@@ -205,22 +196,19 @@ if __name__ == '__main__':
     except getopt.GetoptError:
         habrSD.help()
     
-    if len(args) == 1 :
+    if len(args) == 1 or args[1] == '-h' :
         habrSD.help()
-    else :
-        if args[1] == '-h':
-            habrSD.help()
-        elif args[1] == '-u' :
-            try :
-                habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
-            except Exception as ex:
-                print("[error]: Ошибка получения данных от :", args[2])
-                print(ex)
-        elif args[1] == '-f' :
-            try :
-                habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
-            except Exception as ex:
-                print("[error]: Ошибка получения данных от :", args[2])
-                print(ex)
+    elif args[1] == '-u' :
+        try :
+            habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
+        except Exception as ex:
+            print("[error]: Ошибка получения данных от :", args[2])
+            print(ex)
+    elif args[1] == '-f' :
+        try :
+            habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
+        except Exception as ex:
+            print("[error]: Ошибка получения данных от :", args[2])
+            print(ex)
 
 # apt install libomp-dev
