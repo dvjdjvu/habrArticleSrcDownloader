@@ -32,12 +32,12 @@ class habrArticleSrcDownloader():
         self.posts = None
         self.comments = None
 
-    def callback(self, el):
-        if (el.has_attr('class')) :
-            #print(el['class'][0])
-            return el['class'][0]
-        
-        return None
+    def dir_cor_name(self, _str):
+        for ch in ['#', '%', '&', '{', '}', '\\', '<', '>', '*', '/', '$', '‘', '“', ':', '@', '`', '|']:
+            _str = _str.replace(ch, ' ')
+            
+        return _str
+
 
     def create_dir(self, dir):        
         if not os.path.exists(dir):
@@ -159,7 +159,8 @@ class habrArticleSrcDownloader():
                 p = self.posts[i]
                 print("[info]: Скачивается:", p.text)
                 
-                name = p.text.replace("/", " ")
+                #name = p.text.replace("/", " ")
+                name = self.dir_cor_name(p.text)
                 dir_path = str(len(self.posts) - i) + " " + name
             
                 # создаем директории с названиями статей
