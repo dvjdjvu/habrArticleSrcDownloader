@@ -44,9 +44,9 @@ class habrArticleSrcDownloader():
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)
-                print("[info]: Директория: " + dir + " создана")
+                print(f"[info]: Директория: {dir} создана")
             except OSError as e:
-                print("[error]: Ошибка создания директории: ", dir)
+                print(f"[error]: Ошибка создания директории: {dir}")
 
     def save_md(self, name: str, text: str):
         with open(name + ".md", "w") as fd:
@@ -118,7 +118,7 @@ class habrArticleSrcDownloader():
             self.save_md(name, h)
             self.save_comments(name, str(comment))
             
-            print("[info]: Статья: " + name + " сохранена")
+            print(f"[info]: Статья: {name} сохранена")
 
     def save_pictures(self, pictures):
         for link in pictures:
@@ -156,7 +156,7 @@ class habrArticleSrcDownloader():
             page_number = page_number + 1
     
     def parse_articles(self):
-        print("[info]: Будет загружено:", len(self.posts), "статей.")
+        print(f"[info]: Будет загружено: {len(self.posts)} статей.")
         
         with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
             #for p in self.posts :
