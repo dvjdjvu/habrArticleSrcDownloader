@@ -110,20 +110,7 @@ class habrArticleSrcDownloader():
             # создаем дирректорию под картинки
             self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
-            
-            for link in pictures:
-
-                if (link.get('data-src')) :
-                    try :
-                        img_data = requests.get(link.get('data-src')).content
-                        
-                        a = urlparse(link.get('data-src'))
-                        os.path.basename(a.path)
-                
-                        with open(os.path.basename(a.path), 'wb') as handler:
-                            handler.write(img_data)
-                    except requests.exceptions.RequestException as e:
-                        print("[error]: Ошибка получения картинки: ", link.get('data-src'))
+            self.save_pictures(pictures)
                 
             os.chdir('../')
             
@@ -132,6 +119,19 @@ class habrArticleSrcDownloader():
             self.save_comments(name, str(comment))
             
             print("[info]: Статья: " + name + " сохранена")
+
+    def save_pictures(self, pictures):
+        for link in pictures:
+            if link.get('data-src'):
+                try:
+                    img_data = requests.get(link.get('data-src')).content
+
+                    a = urlparse(link.get('data-src'))
+
+                    with open(os.path.basename(a.path), 'wb') as handler:
+                        handler.write(img_data)
+                except requests.exceptions.RequestException as e:
+                    print("[error]: Ошибка получения картинки: ", link.get('data-src'))
 
     def get_articles(self, url):
         
