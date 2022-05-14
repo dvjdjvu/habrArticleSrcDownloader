@@ -44,9 +44,9 @@ class habrArticleSrcDownloader():
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)
-                print("[info]: Директория: " + dir + " создана")
+                print(f"[info]: Директория: {dir} создана")
             except OSError as e:
-                print("[error]: Ошибка создания директории: ", dir)
+                print(f"[error]: Ошибка создания директории: {dir}")
 
     def save_md(self, name: str, text: str):
         with open(name + ".md", "w") as fd:
@@ -110,20 +110,7 @@ class habrArticleSrcDownloader():
             # создаем дирректорию под картинки
             self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
-            
-            for link in pictures:
-
-                if (link.get('data-src')) :
-                    try :
-                        img_data = requests.get(link.get('data-src')).content
-                        
-                        a = urlparse(link.get('data-src'))
-                        os.path.basename(a.path)
-                
-                        with open(os.path.basename(a.path), 'wb') as handler:
-                            handler.write(img_data)
-                    except requests.exceptions.RequestException as e:
-                        print("[error]: Ошибка получения картинки: ", link.get('data-src'))
+            self.save_pictures(pictures)
                 
             os.chdir('../')
             
@@ -131,7 +118,20 @@ class habrArticleSrcDownloader():
             self.save_md(name, h)
             self.save_comments(name, str(comment))
             
-            print("[info]: Статья: " + name + " сохранена")
+            print(f"[info]: Статья: {name} сохранена")
+
+    def save_pictures(self, pictures):
+        for link in pictures:
+            if link.get('data-src'):
+                try:
+                    img_data = requests.get(link.get('data-src')).content
+
+                    a = urlparse(link.get('data-src'))
+
+                    with open(os.path.basename(a.path), 'wb') as handler:
+                        handler.write(img_data)
+                except requests.exceptions.RequestException as e:
+                    print("[error]: Ошибка получения картинки: ", link.get('data-src'))
 
     def get_articles(self, url):
         
@@ -156,7 +156,7 @@ class habrArticleSrcDownloader():
             page_number = page_number + 1
     
     def parse_articles(self):
-        print("[info]: Будет загружено:", len(self.posts), "статей.")
+        print(f"[info]: Будет загружено: {len(self.posts)} статей.")
         
         with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
             #for p in self.posts :
