@@ -50,6 +50,7 @@ class habrArticleSrcDownloader():
 
     def save_md(self, name: str, text: str):
         with open(name + ".md", "w") as fd:
+            fd.write(f'# {name}\n')
             fd.write(text)
 
     def save_html(self, name: str, text: str):
