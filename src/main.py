@@ -55,6 +55,7 @@ class habrArticleSrcDownloader():
 
     def save_html(self, name: str, text: str):
         with open(name + ".html", "w") as fd:
+            fd.write(f'<h1>{name}</h1>')
             fd.write(text)
 
     def save_comments(self, name: str, text: str):
