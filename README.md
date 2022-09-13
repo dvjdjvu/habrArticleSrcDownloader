@@ -1,26 +1,29 @@
+# habrArticleSrcDownloader
+
 Скрипт python3 для скачивания исходников статей с [habr](https://habr.com/)  
 Тестировал на **python 3.6.9**, под **Linux Mint 19.3**.
 
+## Как использовать:
 
-### Как использовать:
-
+### Установка:
 ```bash
 apt-get install python3-lxml libomp-dev
 pip3 install -r requirements.txt
-./src/main.py "user_name"
 ```
 
-Скачиваем статьи пользователя:
-```bash
-./src/main.py -u "user_name"
+### Использование:
 ```
-Скачиваем закладки пользователя:
-```bash
-./src/main.py -f "user_name"
-```
-Скачиваем одиночную статью:
-```bash
-./src/main.py -s "article_id"
+usage: main.py [-h] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)
+
+Скрипт для скачивания статей с https://habr.com/
+
+options:
+  -h, --help            show this help message and exit
+  -u USER_NAME_FOR_ARTICLES
+                        Скачать статьи пользователя
+  -f USER_NAME_FOR_FAVORITES
+                        Скачать закладки пользователя
+  -s ARTICLE_ID         Скачать одиночную статью
 ```
 
 Например:

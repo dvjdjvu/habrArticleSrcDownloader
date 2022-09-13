@@ -2,9 +2,8 @@
 #-*- coding: utf-8 -*-
 
 import os
-import sys
+import argparse
 import pymp
-import getopt
 import requests
 import markdownify
 import multiprocessing
@@ -196,38 +195,35 @@ class habrArticleSrcDownloader():
 
         os.chdir('../')
 
-    def help(self):
-        print('./main.py [-h] [-uf] user_name')
-        sys.exit()
-
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-u", help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
+    group.add_argument("-f", help="Скачать закладки пользователя", type=str, dest='user_name_for_favorites')
+    group.add_argument("-s", help="Скачать одиночную статью", type=str, dest='article_id')
+    args = parser.parse_args()
+
+    if args.user_name_for_articles:
+        output_name = args.user_name_for_articles + "/posts/"
+        save_type = 'users/'
+        output = DIR_ARCTICLE
+    elif args.user_name_for_favorites:
+        output_name = args.user_name_for_favorites + "/favorites/posts/"
+        save_type = 'users/'
+        output = DIR_FAVORITES
+    else:
+        output_name = args.article_id
+        save_type = 'post/'
+
     habrSD = habrArticleSrcDownloader()
-
     try:
-        opts, args = getopt.getopt(sys.argv, "h")
-    except getopt.GetoptError:
-        habrSD.help()
-
-    if len(args) == 1 or args[1] == '-h':
-        habrSD.help()
-    elif args[1] == '-u':
-        try:
-            habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
-    elif args[1] == '-f':
-        try:
-            habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
-    elif args[1] == '-s':
-        try:
-            habrSD.get_article("https://habr.com/ru/post/" + args[2])
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
+        if save_type == 'users/':
+            habrSD.main("https://habr.com/ru/" + save_type + output_name, output)
+        else:
+            habrSD.get_article("https://habr.com/ru/" + save_type + output_name)
+    except Exception as ex:
+        print("[error]: Ошибка получения данных от :", output_name)
+        print(ex)
 
 # apt install libomp-dev
