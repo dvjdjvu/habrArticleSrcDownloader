@@ -2,10 +2,8 @@
 #-*- coding: utf-8 -*-
 
 import os
-import sys
+import argparse
 import pymp
-import errno
-import getopt
 import requests
 import markdownify
 import multiprocessing
@@ -19,12 +17,14 @@ DIR_PICTURE = 'picture'
 DIR_SINGLES = 'singles'
 HABR_TITLE = "https://habr.com"
 
+
 def callback(el):
-    try :
+    try:
         soup = BeautifulSoup(str(el), features='html.parser')
         return soup.find('code')['class'][0]
-    except :
+    except:
         return None
+
 
 class habrArticleSrcDownloader():
 
@@ -36,16 +36,15 @@ class habrArticleSrcDownloader():
     def dir_cor_name(self, _str):
         for ch in ['#', '%', '&', '{', '}', '\\', '?', '<', '>', '*', '/', '$', '‘', '“', ':', '@', '`', '|']:
             _str = _str.replace(ch, ' ')
-            
+
         return _str
 
-
-    def create_dir(self, dir):        
+    def create_dir(self, dir):
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)
                 print(f"[info]: Директория: {dir} создана")
-            except OSError as e:
+            except OSError:
                 print(f"[error]: Ошибка создания директории: {dir}")
 
     def save_md(self, name: str, text: str):
@@ -64,62 +63,62 @@ class habrArticleSrcDownloader():
 
         with open(name + "_comments.md", "w", encoding="UTF-8") as fd:
             fd.write("\n".join(lst))
-    
-    def get_comments(self, url_soup):        
+
+    def get_comments(self, url_soup):
         comments = url_soup.findAll('link', {'type': 'application/rss+xml'})
-        
-        for c in comments :
+
+        for c in comments:
             try:
                 r = requests.get(c.get('href'))
-            except requests.exceptions.RequestException as e:
+            except requests.exceptions.RequestException:
                 print("[error]: Ошибка получения статьи: ", c.get('href'))
                 return
-            
+
             url_soup = BeautifulSoup(r.text, 'lxml')
-            
+
             return markdownify.markdownify(str(url_soup), heading_style="ATX", code_language_callback=callback)
-    
+
     def get_article(self, url, name = None):
         try:
             r = requests.get(url)
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             print("[error]: Ошибка получения статьи: ", url)
             return
-        
+
         url_soup = BeautifulSoup(r.text, 'lxml')
         comment = self.get_comments(url_soup)
-        
+
         posts = url_soup.findAll('div', {'class': 'tm-article-body'})
         pictures = url_soup.findAll('img')
-        
+
         # одиночное скачивание статьи
-        if name == None :
-            
+        if name == None:
+
             habrSD.create_dir(DIR_SINGLES)
             os.chdir(DIR_SINGLES)
-            
+
             name = self.dir_cor_name(url_soup.find('title').string)
-            
+
             self.create_dir(name)
             os.chdir(name)
-        
-        for p in posts :
-            
+
+        for p in posts:
+
             h = markdownify.markdownify(str(p), heading_style="ATX", code_language_callback=callback)
-            
+
             _p = str(p).replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
-            
+
             # создаем дирректорию под картинки
             self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
             self.save_pictures(pictures)
-                
+
             os.chdir('../')
-            
+
             self.save_html(name, _p)
             self.save_md(name, h)
             self.save_comments(name, str(comment))
-            
+
             print(f"[info]: Статья: {name} сохранена")
 
     def save_pictures(self, pictures):
@@ -132,59 +131,59 @@ class habrArticleSrcDownloader():
 
                     with open(os.path.basename(a.path), 'wb') as handler:
                         handler.write(img_data)
-                except requests.exceptions.RequestException as e:
+                except requests.exceptions.RequestException:
                     print("[error]: Ошибка получения картинки: ", link.get('data-src'))
 
     def get_articles(self, url):
-        
+
         page_number = 1
-        
+
         while True:
-        
+
             try:
                 r = requests.get(url + "page" + str(page_number))
-            except requests.exceptions.RequestException as e:
+            except requests.exceptions.RequestException:
                 print("[error]: Ошибка получения статей: ", url)
                 return
-        
+
             url_soup = BeautifulSoup(r.text, 'lxml')
-        
+
             posts = url_soup.findAll('a', {'class': 'tm-article-snippet__title-link'})
 
-            if (len(posts) == 0) :
+            if (len(posts) == 0):
                 break
 
             self.posts += posts
             page_number = page_number + 1
-    
+
     def parse_articles(self):
         print(f"[info]: Будет загружено: {len(self.posts)} статей.")
-        
+
         with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
             #for p in self.posts :
             for i in pmp.range(0, len(self.posts)):
                 p = self.posts[i]
                 print("[info]: Скачивается:", p.text)
-                
+
                 name = self.dir_cor_name(p.text)
 
                 dir_path = '{:03}'.format(len(self.posts) - i) + " " + name
-            
+
                 # создаем директории с названиями статей
                 self.create_dir(dir_path)
                 # заходим в директорию статьи
                 os.chdir(dir_path)
-            
+
                 self.get_article(HABR_TITLE + p.get('href'), name)
-            
+
                 # выходим из директории статьи
                 os.chdir('../')
-            
+
     def main(self, url, dir):
         # создаем папку для статей
         self.create_dir(dir)
         os.chdir(dir)
-        
+
         # создаем папку с именем автора
         self.dir_author = url.split('/')[5]
         self.create_dir(self.dir_author)
@@ -196,37 +195,35 @@ class habrArticleSrcDownloader():
 
         os.chdir('../')
 
-    def help(self):
-        print('./main.py [-h] [-uf] user_name')
-        sys.exit()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-u", help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
+    group.add_argument("-f", help="Скачать закладки пользователя", type=str, dest='user_name_for_favorites')
+    group.add_argument("-s", help="Скачать одиночную статью", type=str, dest='article_id')
+    args = parser.parse_args()
+
+    if args.user_name_for_articles:
+        output_name = args.user_name_for_articles + "/posts/"
+        save_type = 'users/'
+        output = DIR_ARCTICLE
+    elif args.user_name_for_favorites:
+        output_name = args.user_name_for_favorites + "/favorites/posts/"
+        save_type = 'users/'
+        output = DIR_FAVORITES
+    else:
+        output_name = args.article_id
+        save_type = 'post/'
+
     habrSD = habrArticleSrcDownloader()
-    
     try:
-        opts, args = getopt.getopt(sys.argv, "h")
-    except getopt.GetoptError:
-        habrSD.help()
-    
-    if len(args) == 1 or args[1] == '-h' :
-        habrSD.help()
-    elif args[1] == '-u' :
-        try :
-            habrSD.main("https://habr.com/ru/users/" + args[2] + "/posts/", DIR_ARCTICLE)
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
-    elif args[1] == '-f' :
-        try :
-            habrSD.main("https://habr.com/ru/users/" + args[2] + "/favorites/posts/", DIR_FAVORITES)
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
-    elif args[1] == '-s' :
-        try :            
-            habrSD.get_article("https://habr.com/ru/post/" + args[2])
-        except Exception as ex:
-            print("[error]: Ошибка получения данных от :", args[2])
-            print(ex)
+        if save_type == 'users/':
+            habrSD.main("https://habr.com/ru/" + save_type + output_name, output)
+        else:
+            habrSD.get_article("https://habr.com/ru/" + save_type + output_name)
+    except Exception as ex:
+        print("[error]: Ошибка получения данных от :", output_name)
+        print(ex)
 
 # apt install libomp-dev
