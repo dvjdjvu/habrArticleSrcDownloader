@@ -78,7 +78,7 @@ class habrArticleSrcDownloader():
 
             return markdownify.markdownify(str(url_soup), heading_style="ATX", code_language_callback=callback)
 
-    def get_article(self, url, name = None):
+    def get_article(self, url, name=None):
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException:
@@ -92,7 +92,7 @@ class habrArticleSrcDownloader():
         pictures = url_soup.findAll('img')
 
         # одиночное скачивание статьи
-        if name == None:
+        if name is None:
 
             habrSD.create_dir(DIR_SINGLES)
             os.chdir(DIR_SINGLES)
@@ -150,7 +150,7 @@ class habrArticleSrcDownloader():
 
             posts = url_soup.findAll('a', {'class': 'tm-article-snippet__title-link'})
 
-            if (len(posts) == 0):
+            if len(posts) == 0:
                 break
 
             self.posts += posts
@@ -206,22 +206,19 @@ if __name__ == '__main__':
 
     if args.user_name_for_articles:
         output_name = args.user_name_for_articles + "/posts/"
-        save_type = 'users/'
         output = DIR_ARCTICLE
     elif args.user_name_for_favorites:
         output_name = args.user_name_for_favorites + "/favorites/posts/"
-        save_type = 'users/'
         output = DIR_FAVORITES
     else:
         output_name = args.article_id
-        save_type = 'post/'
 
     habrSD = habrArticleSrcDownloader()
     try:
-        if save_type == 'users/':
-            habrSD.main("https://habr.com/ru/" + save_type + output_name, output)
+        if not args.article_id:
+            habrSD.main("https://habr.com/ru/users/" + output_name, output)
         else:
-            habrSD.get_article("https://habr.com/ru/" + save_type + output_name)
+            habrSD.get_article("https://habr.com/ru/post/" + output_name)
     except Exception as ex:
         print("[error]: Ошибка получения данных от :", output_name)
         print(ex)
