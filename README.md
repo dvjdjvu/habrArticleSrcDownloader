@@ -35,7 +35,7 @@ options:
 ./src/main.py -f jessy_james
 ```
 ```bash
-./src/main.py -s 665634
+./src/main.py -s 665254
 ```
 
 Взять имя пользователя можно из ссылки профиля
