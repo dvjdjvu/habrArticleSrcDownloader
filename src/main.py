@@ -43,7 +43,8 @@ class habrArticleSrcDownloader():
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)
-                print(f"[info]: Директория: {dir} создана")
+                if args.quiet:
+                    print(f"[info]: Директория: {dir} создана")
             except OSError:
                 print(f"[error]: Ошибка создания директории: {dir}")
 
@@ -119,7 +120,8 @@ class habrArticleSrcDownloader():
             self.save_md(name, h)
             self.save_comments(name, str(comment))
 
-            print(f"[info]: Статья: {name} сохранена")
+            if args.quiet:
+                print(f"[info]: Статья: {name} сохранена")
 
     def save_pictures(self, pictures):
         for link in pictures:
@@ -163,7 +165,8 @@ class habrArticleSrcDownloader():
             #for p in self.posts :
             for i in pmp.range(0, len(self.posts)):
                 p = self.posts[i]
-                print("[info]: Скачивается:", p.text)
+                if args.quiet:
+                    print("[info]: Скачивается:", p.text)
 
                 name = self.dir_cor_name(p.text)
 
@@ -198,10 +201,13 @@ class habrArticleSrcDownloader():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
+    parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_false')
+
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-u", help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
-    group.add_argument("-f", help="Скачать закладки пользователя", type=str, dest='user_name_for_favorites')
-    group.add_argument("-s", help="Скачать одиночную статью", type=str, dest='article_id')
+    group.add_argument('-u', help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
+    group.add_argument('-f', help="Скачать закладки пользователя", type=str, dest='user_name_for_favorites')
+    group.add_argument('-s', help="Скачать одиночную статью", type=str, dest='article_id')
+
     args = parser.parse_args()
 
     if args.user_name_for_articles:
