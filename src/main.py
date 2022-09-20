@@ -43,7 +43,7 @@ class habrArticleSrcDownloader():
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)
-                if args.quiet:
+                if not args.quiet:
                     print(f"[info]: Директория: {dir} создана")
             except OSError:
                 print(f"[error]: Ошибка создания директории: {dir}")
@@ -120,7 +120,7 @@ class habrArticleSrcDownloader():
             self.save_md(name, h)
             self.save_comments(name, str(comment))
 
-            if args.quiet:
+            if not args.quiet:
                 print(f"[info]: Статья: {name} сохранена")
 
     def save_pictures(self, pictures):
@@ -165,7 +165,7 @@ class habrArticleSrcDownloader():
             #for p in self.posts :
             for i in pmp.range(0, len(self.posts)):
                 p = self.posts[i]
-                if args.quiet:
+                if not args.quiet:
                     print("[info]: Скачивается:", p.text)
 
                 name = self.dir_cor_name(p.text)
@@ -201,7 +201,7 @@ class habrArticleSrcDownloader():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
-    parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_false')
+    parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_true')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-u', help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
