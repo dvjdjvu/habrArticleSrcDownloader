@@ -13,12 +13,13 @@ pip3 install -r requirements.txt
 
 ### Использование:
 ```
-usage: main.py [-h] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)
+usage: main.py [-h] [-q] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)
 
 Скрипт для скачивания статей с https://habr.com/
 
 options:
   -h, --help            show this help message and exit
+  -q, --quiet           Quiet mode
   -u USER_NAME_FOR_ARTICLES
                         Скачать статьи пользователя
   -f USER_NAME_FOR_FAVORITES
@@ -35,7 +36,7 @@ options:
 ./src/main.py -f jessy_james
 ```
 ```bash
-./src/main.py -s 665634
+./src/main.py -s 665254
 ```
 
 Взять имя пользователя можно из ссылки профиля
