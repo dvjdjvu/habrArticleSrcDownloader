@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 DIR_ARCTICLE = 'article'
 DIR_FAVORITES = 'favorites'
 DIR_PICTURE = 'picture'
+DIR_VIDEO = 'video'
 DIR_SINGLES = 'singles'
 HABR_TITLE = "https://habr.com"
 
@@ -44,9 +45,9 @@ class habrArticleSrcDownloader():
             try:
                 os.makedirs(dir)
                 if not args.quiet:
-                    print(f"[info]: Директория: {dir} создана")
+                    print("[info]: Директория: {} создана".format(dir))
             except OSError:
-                print(f"[error]: Ошибка создания директории: {dir}")
+                print("[error]: Ошибка создания директории: {}".format(dir))
 
     def save_md(self, name: str, text: str):
         with open(name + ".md", "w", encoding="UTF-8") as fd:
@@ -91,6 +92,7 @@ class habrArticleSrcDownloader():
 
         posts = url_soup.findAll('div', {'class': 'tm-article-body'})
         pictures = url_soup.findAll('img')
+        video = url_soup.findAll('div', {'class': 'tm-iframe_temp'})
 
         # одиночное скачивание статьи
         if name is None:
@@ -121,13 +123,18 @@ class habrArticleSrcDownloader():
             self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
             self.save_pictures(pictures)
-
             os.chdir('../')
-
+            
+            # создаем дирректорию под видео
+            self.create_dir(DIR_VIDEO)
+            os.chdir(DIR_VIDEO)
+            self.save_video(video)
+            os.chdir('../')
+            
             self.save_html(name, _p)
             self.save_md(name, h)
             self.save_comments(name, str(comment))
-
+            
             if not args.quiet:
                 print(f"[info]: Статья: {name} сохранена")
 
@@ -143,7 +150,14 @@ class habrArticleSrcDownloader():
                         handler.write(img_data)
                 except requests.exceptions.RequestException:
                     print("[error]: Ошибка получения картинки: ", link.get('data-src'))
-
+    
+    def save_video(self, video):
+        with open('video.txt', 'w') as f:
+            for link in video:
+                if link.get('data-src'):
+                    print(link.get('data-src'), file=f) 
+ 
+    
     def get_articles(self, url):
 
         page_number = 1
