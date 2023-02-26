@@ -13,13 +13,14 @@ pip3 install -r requirements.txt
 
 ### Использование:
 ```
-usage: main.py [-h] [-q] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)
+usage: main.py [-h] [-q] [-l] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)
 
 Скрипт для скачивания статей с https://habr.com/
 
 options:
   -h, --help            show this help message and exit
   -q, --quiet           Quiet mode
+  -l, --local-pictures  Использовать абсолютный путь к изображениям в сохранённых файлах
   -u USER_NAME_FOR_ARTICLES
                         Скачать статьи пользователя
   -f USER_NAME_FOR_FAVORITES

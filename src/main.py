@@ -105,6 +105,14 @@ class habrArticleSrcDownloader():
 
         for p in posts:
 
+            if args.local_pictures is True:
+                pictures_names = p.findAll('img')
+                for link in pictures_names:
+                    link = link.get('src')
+                    filename = 'picture/' + link.split('/')[len(link.split('/')) - 1]
+                    p = str(p)
+                    p = p.replace(str(link), str(filename))
+
             h = markdownify.markdownify(str(p), heading_style="ATX", code_language_callback=callback)
 
             _p = str(p).replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
@@ -202,6 +210,8 @@ class habrArticleSrcDownloader():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
     parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_true')
+    parser.add_argument('-l', '--local-pictures',
+                        help="Использовать абсолютный путь к изображениям в сохранённых файлах", action='store_true')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-u', help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
