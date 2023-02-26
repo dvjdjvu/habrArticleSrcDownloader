@@ -195,7 +195,7 @@ class habrArticleSrcDownloader():
         os.chdir('../')
 
     def help(self):
-        print('./main.py [-h] [-uf] user_name')
+        print('./main.py [-h] [-ufs] user_name')
         sys.exit()
 
 if __name__ == '__main__':
