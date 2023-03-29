@@ -100,14 +100,14 @@ class habrArticleSrcDownloader():
             habrSD.create_dir(DIR_SINGLES)
             os.chdir(DIR_SINGLES)
 
-            name = self.dir_cor_name(url_soup.find('h1', 'tm-article-snippet__title tm-article-snippet__title_h1').string)
+            name = self.dir_cor_name(url_soup.find('h1', 'tm-title tm-title_h1').string)
 
             self.create_dir(name)
             os.chdir(name)
 
         for p in posts:
 
-            if args.local_pictures is True:
+            if args.local_pictures:
                 pictures_names = p.findAll('img')
                 for link in pictures_names:
                     link = link.get('src')
@@ -115,26 +115,28 @@ class habrArticleSrcDownloader():
                     p = str(p)
                     p = p.replace(str(link), str(filename))
 
-            h = markdownify.markdownify(str(p), heading_style="ATX", code_language_callback=callback)
+            p = str(p)
 
-            _p = str(p).replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
+            h = markdownify.markdownify(p, heading_style="ATX", code_language_callback=callback)
+
+            _p = p.replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
 
             # создаем дирректорию под картинки
             self.create_dir(DIR_PICTURE)
             os.chdir(DIR_PICTURE)
             self.save_pictures(pictures)
             os.chdir('../')
-            
+
             # создаем дирректорию под видео
             self.create_dir(DIR_VIDEO)
             os.chdir(DIR_VIDEO)
             self.save_video(video)
             os.chdir('../')
-            
+
             self.save_html(name, _p)
             self.save_md(name, h)
             self.save_comments(name, str(comment))
-            
+
             if not args.quiet:
                 print(f"[info]: Статья: {name} сохранена")
 
@@ -150,20 +152,17 @@ class habrArticleSrcDownloader():
                         handler.write(img_data)
                 except requests.exceptions.RequestException:
                     print("[error]: Ошибка получения картинки: ", link.get('data-src'))
-    
+
     def save_video(self, video):
         with open('video.txt', 'w') as f:
             for link in video:
                 if link.get('data-src'):
-                    print(link.get('data-src'), file=f) 
- 
-    
-    def get_articles(self, url):
+                    print(link.get('data-src'), file=f)
 
+    def get_articles(self, url):
         page_number = 1
 
         while True:
-
             try:
                 r = requests.get(url + "page" + str(page_number))
             except requests.exceptions.RequestException:
@@ -172,7 +171,7 @@ class habrArticleSrcDownloader():
 
             url_soup = BeautifulSoup(r.text, 'lxml')
 
-            posts = url_soup.findAll('a', {'class': 'tm-article-snippet__title-link'})
+            posts = url_soup.findAll('a', {'class': 'tm-title__link'})
 
             if len(posts) == 0:
                 break
@@ -220,9 +219,6 @@ class habrArticleSrcDownloader():
 
         os.chdir('../')
 
-    def help(self):
-        print('./main.py [-h] [-qlufs] user_name')
-        sys.exit()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Скрипт для скачивания статей с https://habr.com/")
