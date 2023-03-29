@@ -171,7 +171,7 @@ class habrArticleSrcDownloader():
 
             url_soup = BeautifulSoup(r.text, 'lxml')
 
-            posts = url_soup.findAll('a', {'class': 'tm-article-snippet__title-link'})
+            posts = url_soup.findAll('a', {'class': 'tm-title__link'})
 
             if len(posts) == 0:
                 break
