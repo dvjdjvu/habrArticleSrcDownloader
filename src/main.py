@@ -100,7 +100,7 @@ class habrArticleSrcDownloader():
             habrSD.create_dir(DIR_SINGLES)
             os.chdir(DIR_SINGLES)
 
-            name = self.dir_cor_name(url_soup.find('h1', 'tm-article-snippet__title tm-article-snippet__title_h1').string)
+            name = self.dir_cor_name(url_soup.find('h1', 'tm-title tm-title_h1').string)
 
             self.create_dir(name)
             os.chdir(name)
