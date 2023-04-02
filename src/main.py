@@ -127,11 +127,12 @@ class habrArticleSrcDownloader():
             self.save_pictures(pictures)
             os.chdir('../')
 
-            # создаем дирректорию под видео
-            self.create_dir(DIR_VIDEO)
-            os.chdir(DIR_VIDEO)
-            self.save_video(video)
-            os.chdir('../')
+            if video != []:
+                # создаем дирректорию под видео
+                self.create_dir(DIR_VIDEO)
+                os.chdir(DIR_VIDEO)
+                self.save_video(video)
+                os.chdir('../')
 
             self.save_html(name, _p)
             self.save_md(name, h)
