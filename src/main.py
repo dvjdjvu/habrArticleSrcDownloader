@@ -105,40 +105,49 @@ class habrArticleSrcDownloader():
             self.create_dir(name)
             os.chdir(name)
 
-        for p in posts:
+        text = ''
 
+        if args.meta_information:
+            try:
+                article_createtime = url_soup.find('span',
+                                                   {'class': 'tm-article-datetime-published'}).find('time').get('title')
+                article_author = url_soup.find('a', {'class': 'tm-user-info__username'}).get('href').split('/')
+                text += f"<p>Url: {url}</p>\n<p>Author: {article_author[len(article_author) - 2]}</p>\n<p>Date: {article_createtime}</p>\n"
+            except:
+                print("[error]: Ошибка получения метаданных статьи: ", url)
+
+        for post in posts:
             if args.local_pictures:
-                pictures_names = p.findAll('img')
+                pictures_names = post.findAll('img')
                 for link in pictures_names:
                     link = link.get('src')
                     filename = 'picture/' + link.split('/')[len(link.split('/')) - 1]
-                    p = str(p)
-                    p = p.replace(str(link), str(filename))
+                    post = str(post).replace(str(link), str(filename))
 
-            p = str(p)
+            text += str(post)
 
-            h = markdownify.markdownify(p, heading_style="ATX", code_language_callback=callback)
+        text_md = markdownify.markdownify(text, heading_style="ATX", code_language_callback=callback)
+        text_html = text.replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
 
-            _p = p.replace("<pre><code class=", "<source lang=").replace("</code></pre>", "</source>")
+        # создаем дирректорию под картинки
+        self.create_dir(DIR_PICTURE)
+        os.chdir(DIR_PICTURE)
+        self.save_pictures(pictures)
+        os.chdir('../')
 
-            # создаем дирректорию под картинки
-            self.create_dir(DIR_PICTURE)
-            os.chdir(DIR_PICTURE)
-            self.save_pictures(pictures)
-            os.chdir('../')
-
+        if video != []:
             # создаем дирректорию под видео
             self.create_dir(DIR_VIDEO)
             os.chdir(DIR_VIDEO)
             self.save_video(video)
             os.chdir('../')
 
-            self.save_html(name, _p)
-            self.save_md(name, h)
-            self.save_comments(name, str(comment))
+        self.save_html(name, text_html)
+        self.save_md(name, text_md)
+        self.save_comments(name, str(comment))
 
-            if not args.quiet:
-                print(f"[info]: Статья: {name} сохранена")
+        if not args.quiet:
+            print(f"[info]: Статья: {name} сохранена")
 
     def save_pictures(self, pictures):
         for link in pictures:
@@ -225,6 +234,7 @@ if __name__ == '__main__':
     parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_true')
     parser.add_argument('-l', '--local-pictures',
                         help="Использовать абсолютный путь к изображениям в сохранённых файлах", action='store_true')
+    parser.add_argument('-i', '--meta-information', help="Добавить мета-информацию о статье в файл", action='store_true')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-u', help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
