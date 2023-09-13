@@ -11,6 +11,13 @@ apt-get install python3-lxml libomp-dev
 pip3 install -r requirements.txt
 ```
 
+На macos использовать следующие команды
+```bash
+brew install python-lxml
+brew install libomp
+pip3 install -r requirements.txt
+```
+
 ### Использование:
 ```
 usage: main.py [-h] [-q] [-l] [-i] (-u USER_NAME_FOR_ARTICLES | -f USER_NAME_FOR_FAVORITES | -s ARTICLE_ID)

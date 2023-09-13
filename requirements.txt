@@ -2,3 +2,4 @@ requests>=2.18.4
 markdownify>=0.11.2
 BeautifulSoup4>=4.9.3
 pymp-pypi>=0.0.5
+lxml

@@ -7,6 +7,7 @@ import pymp
 import requests
 import markdownify
 import multiprocessing
+from lxml import html
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
