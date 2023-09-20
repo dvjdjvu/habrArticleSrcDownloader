@@ -1,6 +1,6 @@
 # habrArticleSrcDownloader
 
-Скрипт python3 для скачивания исходников статей с [habr](https://habr.com/)  
+Скрипт python3 для скачивания исходников статей с [habr](https://habr.com/)
 Тестировал на **python 3.6.9**, под **Linux Mint 19.3**.
 
 ## Как использовать:
@@ -80,4 +80,23 @@ options:
 [info]: Директория: picture создана
 [info]: Статья: Игрушка ГАЗ-66 на пульте управления. Часть 1 сохранена
 
+```
+
+
+#### Docker
+
+Build the image:
+
+```
+docker build -t habrsaver .
+```
+
+Usage (same as described above):
+
+```
+docker run --rm --name habrsaver  \
+            -v $(pwd)/article:/app/article \
+            -v $(pwd)/favorites:/app/favorites \
+            -v $(pwd)/singles:/app/singles \
+            habrsaver -s 665254
 ```
