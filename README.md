@@ -6,12 +6,14 @@
 ## Как использовать:
 
 ### Установка:
+
+#### Linux
 ```bash
 apt-get install python3-lxml libomp-dev
 pip3 install -r requirements.txt
 ```
 
-На macos использовать следующие команды
+#### macOS
 ```bash
 brew install python-lxml
 brew install libomp
