@@ -87,13 +87,13 @@ options:
 
 #### Docker
 
-Build the image:
+Сборка образа:
 
 ```
 docker build -t habrsaver .
 ```
 
-Usage (same as described above):
+Запуск контейнера:
 
 ```
 docker run --rm --name habrsaver  \
