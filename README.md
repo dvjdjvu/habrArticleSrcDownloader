@@ -1,6 +1,6 @@
 # habrArticleSrcDownloader
 
-Скрипт python3 для скачивания исходников статей с [habr](https://habr.com/)
+Скрипт python3 для скачивания исходников статей с [habr](https://habr.com/).
 Тестировал на **python 3.6.9**, под **Linux Mint 19.3**.
 
 ## Как использовать:
@@ -15,8 +15,7 @@ pip3 install -r requirements.txt
 
 #### macOS
 ```bash
-brew install python-lxml
-brew install libomp
+brew install python-lxml libomp
 pip3 install -r requirements.txt
 ```
 
