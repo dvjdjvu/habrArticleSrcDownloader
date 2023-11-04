@@ -3,11 +3,13 @@
 
 import os
 import argparse
+import re
 import pymp
 import requests
 import markdownify
 import multiprocessing
 from lxml import html
+import math
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -169,25 +171,38 @@ class habrArticleSrcDownloader():
                 if link.get('data-src'):
                     print(link.get('data-src'), file=f)
 
+    def define_numer_of_pages(self, url):
+        r = requests.get(url)
+        url_soup = BeautifulSoup(r.text, 'lxml')
+        span = url_soup.find("span",{"class":"tm-tabs__tab-counter"})
+        span_value = re.sub(r'[^0-9]', '', span.text)
+        number_of_pages = math.ceil(int(span_value)/20)
+        return number_of_pages
+
+
     def get_articles(self, url):
-        page_number = 1
+        number_of_pages = self.define_numer_of_pages(url)
+        try:
+            r = requests.get(url)
+        except requests.exceptions.RequestException:
+            print("[error]: Ошибка получения статей: ", url)
+            return
 
-        while True:
-            try:
-                r = requests.get(url + "page" + str(page_number))
-            except requests.exceptions.RequestException:
-                print("[error]: Ошибка получения статей: ", url)
-                return
+        url_soup = BeautifulSoup(r.text, 'lxml')
+        posts = url_soup.findAll('a', {'class': 'tm-title__link'})
+        self.posts += posts
+        if number_of_pages > 1: 
+            for page in range(2,number_of_pages):
+                try:
+                    r = requests.get(url + "page" + str(page))
+                except requests.exceptions.RequestException:
+                    print("[error]: Ошибка получения статей: ", url)
+                    return
 
-            url_soup = BeautifulSoup(r.text, 'lxml')
+                url_soup = BeautifulSoup(r.text, 'lxml')
+                posts = url_soup.findAll('a', {'class': 'tm-title__link'})
+                self.posts += posts
 
-            posts = url_soup.findAll('a', {'class': 'tm-title__link'})
-
-            if len(posts) == 0:
-                break
-
-            self.posts += posts
-            page_number = page_number + 1
 
     def parse_articles(self):
         print(f"[info]: Будет загружено: {len(self.posts)} статей.")
@@ -245,7 +260,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.user_name_for_articles:
-        output_name = args.user_name_for_articles + "/posts/"
+        output_name = args.user_name_for_articles + "/publications/articles/"
         output = DIR_ARCTICLE
     elif args.user_name_for_favorites:
         output_name = args.user_name_for_favorites + "/favorites/posts/"
