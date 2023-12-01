@@ -171,17 +171,27 @@ class habrArticleSrcDownloader():
                 if link.get('data-src'):
                     print(link.get('data-src'), file=f)
 
-    def define_numer_of_pages(self, url):
+    def define_numer_of_pages(self, url, type_articles):
         r = requests.get(url)
         url_soup = BeautifulSoup(r.text, 'lxml')
-        span = url_soup.find("span",{"class":"tm-tabs__tab-counter"})
+        #spans = url_soup.find_all("span", {"class": "tm-tabs__tab-counter"})
+        spans = url_soup.find_all("span", {"class": "tm-tabs__tab-item"})
+        
+        if type_articles == 'u':
+            span = spans[1]
+        elif type_articles == 'f':
+            span = spans[3]
+        elif type_articles == 's':
+            span = spans[1]
+        
+        span = span.find('span')
         span_value = re.sub(r'[^0-9]', '', span.text)
         number_of_pages = math.ceil(int(span_value)/20)
         return number_of_pages
 
 
-    def get_articles(self, url):
-        number_of_pages = self.define_numer_of_pages(url)
+    def get_articles(self, url, type_articles):
+        number_of_pages = self.define_numer_of_pages(url, type_articles)
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException:
@@ -204,7 +214,7 @@ class habrArticleSrcDownloader():
                 self.posts += posts
 
 
-    def parse_articles(self):
+    def parse_articles(self, type_articles):
         print(f"[info]: Будет загружено: {len(self.posts)} статей.")
 
         with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
@@ -228,7 +238,7 @@ class habrArticleSrcDownloader():
                 # выходим из директории статьи
                 os.chdir('../')
 
-    def main(self, url, dir):
+    def main(self, url, dir, type_articles):
         # создаем папку для статей
         self.create_dir(dir)
         os.chdir(dir)
@@ -238,9 +248,9 @@ class habrArticleSrcDownloader():
         self.create_dir(self.dir_author)
         os.chdir(self.dir_author)
 
-        self.get_articles(url)
+        self.get_articles(url, type_articles)
 
-        self.parse_articles()
+        self.parse_articles(type_articles)
 
         os.chdir('../')
 
@@ -259,21 +269,26 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    type_articles = None
+
     if args.user_name_for_articles:
         output_name = args.user_name_for_articles + "/publications/articles/"
         output = DIR_ARCTICLE
+        type_articles = 'u'
     elif args.user_name_for_favorites:
         output_name = args.user_name_for_favorites + "/bookmarks/articles/"
         output = DIR_FAVORITES
+        type_articles = 'f'
     else:
         output_name = args.article_id
+        type_articles = 's'
 
     habrSD = habrArticleSrcDownloader()
     try:
         if not args.article_id:
-            habrSD.main("https://habr.com/ru/users/" + output_name, output)
+            habrSD.main("https://habr.com/ru/users/" + output_name, output, type_articles)
         else:
-            habrSD.get_article("https://habr.com/ru/post/" + output_name)
+            habrSD.get_article("https://habr.com/ru/post/" + output_name, type_articles)
     except Exception as ex:
         print("[error]: Ошибка получения данных от :", output_name)
         print(ex)
