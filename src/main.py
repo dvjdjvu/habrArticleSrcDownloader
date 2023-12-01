@@ -192,7 +192,7 @@ class habrArticleSrcDownloader():
         posts = url_soup.findAll('a', {'class': 'tm-title__link'})
         self.posts += posts
         if number_of_pages > 1: 
-            for page in range(2,number_of_pages):
+            for page in range(2, number_of_pages + 1):
                 try:
                     r = requests.get(url + "page" + str(page))
                 except requests.exceptions.RequestException:
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         output_name = args.user_name_for_articles + "/publications/articles/"
         output = DIR_ARCTICLE
     elif args.user_name_for_favorites:
-        output_name = args.user_name_for_favorites + "/favorites/posts/"
+        output_name = args.user_name_for_favorites + "/bookmarks/articles/"
         output = DIR_FAVORITES
     else:
         output_name = args.article_id
