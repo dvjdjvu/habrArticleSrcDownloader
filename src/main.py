@@ -1,17 +1,21 @@
 #!/usr/bin/python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import os
 import argparse
+import math
+import multiprocessing
+import os
 import re
+import traceback
+import warnings
+
+import markdownify
 import pymp
 import requests
-import markdownify
-import multiprocessing
-from lxml import html
-import math
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 
-from bs4 import BeautifulSoup
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+
 from urllib.parse import urlparse
 
 DIR_ARCTICLE = 'article'
@@ -70,7 +74,7 @@ class habrArticleSrcDownloader():
             fd.write("\n".join(lst))
 
     def get_comments(self, url_soup):
-        comments = url_soup.findAll('link', {'type': 'application/rss+xml'})
+        comments = url_soup.find_all('link', {'type': 'application/rss+xml'})
 
         for c in comments:
             try:
@@ -79,27 +83,29 @@ class habrArticleSrcDownloader():
                 print("[error]: Ошибка получения статьи: ", c.get('href'))
                 return
 
-            url_soup = BeautifulSoup(r.text, 'lxml')
+            url_soup = BeautifulSoup(r.text, 'xml')
 
             return markdownify.markdownify(str(url_soup), heading_style="ATX", code_language_callback=callback)
 
-    def get_article(self, url, name=None):
+    def get_article(self, url, name, type_articles=None):
+        print(f"[debug]: get_article: {url}")
+
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException:
             print("[error]: Ошибка получения статьи: ", url)
             return
 
-        url_soup = BeautifulSoup(r.text, 'lxml')
+        url_soup = BeautifulSoup(r.text, 'xml')
         comment = self.get_comments(url_soup)
 
-        posts = url_soup.findAll('div', {'class': 'tm-article-body'})
-        pictures = url_soup.findAll('img')
-        video = url_soup.findAll('div', {'class': 'tm-iframe_temp'})
+        #posts = url_soup.find_all('div', {'class': 'tm-article-body'})
+        posts = url_soup.find_all('div', {'class': 'article-body'})
+        pictures = url_soup.find_all('img')
+        video = url_soup.find_all('div', {'class': 'tm-iframe_temp'})
 
         # одиночное скачивание статьи
-        if name is None:
-
+        if type_articles == 's':
             habrSD.create_dir(DIR_SINGLES)
             os.chdir(DIR_SINGLES)
 
@@ -121,7 +127,8 @@ class habrArticleSrcDownloader():
 
         for post in posts:
             if args.local_pictures:
-                pictures_names = post.findAll('img')
+                pictures_names = post.find_all('img')
+
                 for link in pictures_names:
                     link = link.get('src')
                     filename = 'picture/' + link.split('/')[len(link.split('/')) - 1]
@@ -154,16 +161,18 @@ class habrArticleSrcDownloader():
 
     def save_pictures(self, pictures):
         for link in pictures:
-            if link.get('data-src'):
-                try:
-                    img_data = requests.get(link.get('data-src')).content
+            src = 'src' # 'data-src'
 
-                    a = urlparse(link.get('data-src'))
+            if link.get(src):
+                try:
+                    img_data = requests.get(link.get(src)).content
+
+                    a = urlparse(link.get(src))
 
                     with open(os.path.basename(a.path), 'wb') as handler:
                         handler.write(img_data)
                 except requests.exceptions.RequestException:
-                    print("[error]: Ошибка получения картинки: ", link.get('data-src'))
+                    print("[error]: Ошибка получения картинки: ", link.get(src))
 
     def save_video(self, video):
         with open('video.txt', 'w') as f:
@@ -173,22 +182,24 @@ class habrArticleSrcDownloader():
 
     def define_numer_of_pages(self, url, type_articles):
         r = requests.get(url)
-        url_soup = BeautifulSoup(r.text, 'lxml')
-        #spans = url_soup.find_all("span", {"class": "tm-tabs__tab-counter"})
-        spans = url_soup.find_all("span", {"class": "tm-tabs__tab-item"})
-        
+        url_soup = BeautifulSoup(r.text, 'xml')
+        spans = url_soup.find_all("span", {"class": "tab-item"})
+
         if type_articles == 'u':
             span = spans[1]
         elif type_articles == 'f':
             span = spans[3]
         elif type_articles == 's':
             span = spans[1]
-        
-        span = span.find('span')
-        span_value = re.sub(r'[^0-9]', '', span.text)
-        number_of_pages = math.ceil(int(span_value)/20)
-        return number_of_pages
 
+        span = span.find('span')
+
+        print(span)
+
+        span_value = re.sub(r'[^0-9]', '', span.text)
+
+        number_of_pages = math.ceil(int(span_value) / 20)
+        return number_of_pages
 
     def get_articles(self, url, type_articles):
         number_of_pages = self.define_numer_of_pages(url, type_articles)
@@ -198,27 +209,29 @@ class habrArticleSrcDownloader():
             print("[error]: Ошибка получения статей: ", url)
             return
 
-        url_soup = BeautifulSoup(r.text, 'lxml')
-        posts = url_soup.findAll('a', {'class': 'tm-title__link'})
-        self.posts += posts
-        if number_of_pages > 1: 
-            for page in range(2, number_of_pages + 1):
+        url_soup = BeautifulSoup(r.text, 'xml')
+        posts = url_soup.find_all('a', {'class': 'tm-title__link'})
+
+        # Если всего 1 страница статей, то она доступна по ссылке https://habr.com/ru/users/olegiv2019/ без pageN
+        if number_of_pages == 1:
+            self.posts += posts
+        elif number_of_pages > 1:
+            for page in range(1, number_of_pages + 1):
                 try:
                     r = requests.get(url + "page" + str(page))
                 except requests.exceptions.RequestException:
                     print("[error]: Ошибка получения статей: ", url)
                     return
 
-                url_soup = BeautifulSoup(r.text, 'lxml')
-                posts = url_soup.findAll('a', {'class': 'tm-title__link'})
+                url_soup = BeautifulSoup(r.text, 'xml')
+                posts = url_soup.find_all('a', {'class': 'tm-title__link'})
                 self.posts += posts
-
 
     def parse_articles(self, type_articles):
         print(f"[info]: Будет загружено: {len(self.posts)} статей.")
 
         with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
-            #for p in self.posts :
+            # for p in self.posts :
             for i in pmp.range(0, len(self.posts)):
                 p = self.posts[i]
                 if not args.quiet:
@@ -260,7 +273,8 @@ if __name__ == '__main__':
     parser.add_argument('-q', '--quiet', help="Quiet mode", action='store_true')
     parser.add_argument('-l', '--local-pictures',
                         help="Использовать абсолютный путь к изображениям в сохранённых файлах", action='store_true')
-    parser.add_argument('-i', '--meta-information', help="Добавить мета-информацию о статье в файл", action='store_true')
+    parser.add_argument('-i', '--meta-information', help="Добавить мета-информацию о статье в файл",
+                        action='store_true')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-u', help="Скачать статьи пользователя", type=str, dest='user_name_for_articles')
@@ -272,7 +286,7 @@ if __name__ == '__main__':
     type_articles = None
 
     if args.user_name_for_articles:
-        output_name = args.user_name_for_articles + "/publications/articles/"
+        output_name = args.user_name_for_articles + "/articles/"
         output = DIR_ARCTICLE
         type_articles = 'u'
     elif args.user_name_for_favorites:
@@ -284,13 +298,18 @@ if __name__ == '__main__':
         type_articles = 's'
 
     habrSD = habrArticleSrcDownloader()
+
+    link = ''
     try:
         if not args.article_id:
-            habrSD.main("https://habr.com/ru/users/" + output_name, output, type_articles)
+            link = "https://habr.com/ru/users/" + output_name
+            habrSD.main(link, output, type_articles)
         else:
-            habrSD.get_article("https://habr.com/ru/post/" + output_name, type_articles)
+            link = "https://habr.com/ru/post/" + output_name
+            habrSD.get_article(link, "", type_articles)
     except Exception as ex:
-        print("[error]: Ошибка получения данных от :", output_name)
+        print("[error]: Ошибка получения данных от :", link)
         print(ex)
+        traceback.print_exc()
 
 # apt install libomp-dev
